@@ -1,0 +1,28 @@
+{
+  "title": "Broadlink Device Patch",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Device",
+        "description": "Enter the device details to register in the Broadlink supported types list.",
+        "data": {
+          "device_id": "Device ID (hex, e.g. 0x27C8)",
+          "model": "Model Name",
+          "manufacturer": "Manufacturer"
+        },
+        "data_description": {
+          "device_id": "The hexadecimal type identifier reported by your Broadlink device.",
+          "model": "A human-readable model name (e.g. RM mini 3).",
+          "manufacturer": "The manufacturer name (defaults to Broadlink)."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This device ID is already registered."
+    },
+    "error": {
+      "invalid_device_id": "Invalid device ID — please use a hex string such as 0x27C8.",
+      "broadlink_unavailable": "The broadlink library is not available. Make sure the broadlink integration is installed."
+    }
+  }
+}

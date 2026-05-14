@@ -1,0 +1,10 @@
+{
+  "domain": "broadlink_patch",
+  "name": "Broadlink Device Patch",
+  "version": "1.1.0",
+  "dependencies": ["broadlink"],
+  "codeowners": [],
+  "iot_class": "local_polling",
+  "documentation": "https://github.com/your-username/broadlink_patch",
+  "issue_tracker": "https://github.com/your-username/broadlink_patch/issues"
+}

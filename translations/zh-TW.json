@@ -1,0 +1,28 @@
+{
+  "title": "Broadlink 裝置修補",
+  "config": {
+    "step": {
+      "user": {
+        "title": "新增裝置",
+        "description": "輸入裝置資訊，將其註冊至 Broadlink 支援裝置清單。",
+        "data": {
+          "device_id": "裝置 ID（十六進位，例如 0x27C8）",
+          "model": "型號名稱",
+          "manufacturer": "製造商"
+        },
+        "data_description": {
+          "device_id": "Broadlink 裝置回報的十六進位型別識別碼。",
+          "model": "易讀的型號名稱（例如 RM mini 3）。",
+          "manufacturer": "製造商名稱（預設為 Broadlink）。"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "此裝置 ID 已完成註冊。"
+    },
+    "error": {
+      "invalid_device_id": "無效的裝置 ID — 請使用十六進位字串，例如 0x27C8。",
+      "broadlink_unavailable": "找不到 broadlink 函式庫，請確認已安裝 broadlink 整合。"
+    }
+  }
+}
