@@ -12,7 +12,6 @@ import logging
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
-import homeassistant.helpers.config_validation as cv
 
 from . import (
     CONF_DEVICE_ID,
@@ -78,21 +77,16 @@ class BroadlinkPatchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return BroadlinkPatchOptionsFlow(config_entry)
 
 
-class BroadlinkPatchOptionsFlow(config_entries.OptionsFlow):
+class BroadlinkPatchOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
     """處理「設定」按鈕的 Options Flow，讓使用者新增自訂裝置。
     Handles the 'Configure' button Options Flow for adding custom devices.
+
+    使用 OptionsFlowWithConfigEntry，self.config_entry 由父類別自動提供。
+    Uses OptionsFlowWithConfigEntry; self.config_entry is provided by the parent class.
 
     目前提供單一裝置的新增表單；重複送出可累積多筆裝置。
     Currently provides a single-device add form; submit multiple times to add more.
     """
-
-    def __init__(self, config_entry):
-        """初始化，保存目前的 Config Entry 以便讀取現有 options。
-        Initialise and store the current Config Entry to read existing options.
-        """
-        # 保存 Config Entry 供後續步驟使用
-        # Store the Config Entry for use in subsequent steps
-        self._config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
         """Options Flow 的進入點，顯示新增裝置的表單。
@@ -111,7 +105,7 @@ class BroadlinkPatchOptionsFlow(config_entries.OptionsFlow):
                 # 讀取現有裝置清單並附加新裝置
                 # Read the existing device list and append the new device
                 existing = list(
-                    self._config_entry.options.get(CONF_DEVICES, DEFAULT_DEVICES)
+                    self.config_entry.options.get(CONF_DEVICES, DEFAULT_DEVICES)
                 )
                 new_device = {
                     CONF_DEVICE_ID: raw_id,
