@@ -131,12 +131,9 @@ def _parse_device_id(raw: str | int) -> int | None:
         return None
 
 
-async def async_setup(hass, config):
-    """將使用者設定的裝置注入 broadlink.SUPPORTED_TYPES。
-    Patch broadlink.SUPPORTED_TYPES with user-defined device entries.
-
-    此函式由 Home Assistant 在啟動時呼叫。
-    This function is called by Home Assistant during startup.
+async def _do_patch(devices: list) -> bool:
+    """核心修補邏輯，供 YAML 和 Config Entry 兩種啟動路徑共用。
+    Core patching logic shared by both the YAML and Config Entry setup paths.
     """
 
     # ── 步驟 1：匯入 broadlink 函式庫 / Step 1: Import broadlink library ────────
@@ -149,7 +146,7 @@ async def async_setup(hass, config):
             "Failed to import the broadlink Python library. "
             "Make sure the 'broadlink' integration is installed."
         )
-        return False  # 回傳 False 告知 HA 此整合設定失敗 / False signals setup failure to HA
+        return False
 
     # ── 步驟 2：確認 SUPPORTED_TYPES 存在 / Step 2: Confirm SUPPORTED_TYPES exists ─
     # 不同版本的 broadlink 函式庫結構可能不同，需先確認屬性存在
@@ -161,21 +158,12 @@ async def async_setup(hass, config):
         )
         return False
 
-    # ── 步驟 3：讀取使用者設定 / Step 3: Read user configuration ─────────────────
-    # 取得本整合的設定區塊；若使用者未設定則使用空字典
-    # Retrieve this integration's config block; use empty dict if absent
-    domain_config = config.get(DOMAIN, {})
-
-    # 取得裝置清單；若未設定則使用預設清單
-    # Get the devices list; fall back to DEFAULT_DEVICES if not configured
-    devices = domain_config.get(CONF_DEVICES, DEFAULT_DEVICES)
-
     # 計數器：成功注入數 / 已存在跳過數
     # Counters: successfully injected / already existed and skipped
     injected = 0
     skipped = 0
 
-    # ── 步驟 4：逐一處理裝置 / Step 4: Process each device entry ─────────────────
+    # ── 步驟 3：逐一處理裝置 / Step 3: Process each device entry ─────────────────
     for entry in devices:
         raw_id = entry[CONF_DEVICE_ID]
 
@@ -222,13 +210,55 @@ async def async_setup(hass, config):
             )
             skipped += 1
 
-    # ── 步驟 5：輸出摘要並回傳成功 / Step 5: Log summary and return success ───────
+    # ── 步驟 4：輸出摘要並回傳成功 / Step 4: Log summary and return success ───────
     _LOGGER.info(
         "Broadlink Device Patch complete: %d device(s) registered, %d already existed.",
         injected,
         skipped,
     )
+    return True
 
-    # 回傳 True 告知 HA 此整合已成功完成設定
-    # Return True to signal Home Assistant that setup succeeded
+
+async def async_setup(hass, config):
+    """YAML 驅動的啟動路徑（進階使用者）。
+    YAML-based setup path for power users who prefer configuration.yaml.
+
+    此函式由 HA 在解析 configuration.yaml 後呼叫。
+    Called by HA after parsing configuration.yaml.
+    """
+    # 取得本整合的設定區塊；若使用者未設定則使用空字典
+    # Retrieve this integration's config block; use empty dict if absent
+    domain_config = config.get(DOMAIN, {})
+
+    # 取得裝置清單；若未設定則使用預設清單
+    # Get the devices list; fall back to DEFAULT_DEVICES if not configured
+    devices = domain_config.get(CONF_DEVICES, DEFAULT_DEVICES)
+
+    return await _do_patch(devices)
+
+
+async def async_setup_entry(hass, entry):
+    """Config Entry 啟動路徑（透過 UI 安裝後每次 HA 重啟自動呼叫）。
+    Config Entry setup path — called automatically on every HA restart
+    after the integration has been added via the UI.
+
+    裝置清單儲存於 Config Entry 的 options 中；
+    若尚未設定任何裝置，則使用預設清單。
+    Device list is stored in the Config Entry options;
+    falls back to DEFAULT_DEVICES if no options have been saved yet.
+    """
+    # 從 Config Entry options 讀取裝置清單（若沒有就用預設值）
+    # Read device list from Config Entry options (fall back to defaults if empty)
+    devices = entry.options.get(CONF_DEVICES, DEFAULT_DEVICES)
+
+    return await _do_patch(devices)
+
+
+async def async_unload_entry(hass, entry):
+    """移除 Config Entry 時呼叫。
+    Called when the Config Entry is removed by the user.
+
+    因為修補只在記憶體中進行，移除時不需要還原任何狀態。
+    Since patching is purely in-memory, there is nothing to undo on unload.
+    """
     return True

@@ -3,8 +3,19 @@
   "config": {
     "step": {
       "user": {
-        "title": "Add Device",
-        "description": "Enter the device details to register in the Broadlink supported types list.",
+        "title": "Broadlink Device Patch",
+        "description": "Click Submit to enable the patch. The default device (RM mini 3, 0x27C8) will be registered automatically on the next restart.\n\nTo add more devices, click Configure on the integration card after setup."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Only one instance of Broadlink Device Patch is allowed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Add a Device",
+        "description": "Enter the details of the device you want to add to the Broadlink supported types list.",
         "data": {
           "device_id": "Device ID (hex, e.g. 0x27C8)",
           "model": "Model Name",
@@ -17,12 +28,8 @@
         }
       }
     },
-    "abort": {
-      "already_configured": "This device ID is already registered."
-    },
     "error": {
-      "invalid_device_id": "Invalid device ID — please use a hex string such as 0x27C8.",
-      "broadlink_unavailable": "The broadlink library is not available. Make sure the broadlink integration is installed."
+      "invalid_device_id": "Invalid device ID — please use a hex string such as 0x27C8."
     }
   }
 }

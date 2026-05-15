@@ -3,8 +3,19 @@
   "config": {
     "step": {
       "user": {
+        "title": "Broadlink 裝置修補",
+        "description": "按下送出即可啟用修補功能。預設裝置（RM mini 3, 0x27C8）將在下次重啟時自動注入。\n\n若要新增更多裝置，請在安裝完成後點擊整合卡片上的「設定」按鈕。"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Broadlink 裝置修補只能安裝一個實例。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
         "title": "新增裝置",
-        "description": "輸入裝置資訊，將其註冊至 Broadlink 支援裝置清單。",
+        "description": "輸入要新增至 Broadlink 支援清單的裝置資訊。",
         "data": {
           "device_id": "裝置 ID（十六進位，例如 0x27C8）",
           "model": "型號名稱",
@@ -17,12 +28,8 @@
         }
       }
     },
-    "abort": {
-      "already_configured": "此裝置 ID 已完成註冊。"
-    },
     "error": {
-      "invalid_device_id": "無效的裝置 ID — 請使用十六進位字串，例如 0x27C8。",
-      "broadlink_unavailable": "找不到 broadlink 函式庫，請確認已安裝 broadlink 整合。"
+      "invalid_device_id": "無效的裝置 ID — 請使用十六進位字串，例如 0x27C8。"
     }
   }
 }
