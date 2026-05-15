@@ -14,6 +14,13 @@
   "options": {
     "step": {
       "init": {
+        "title": "管理裝置",
+        "description": "目前已註冊的裝置：\n{devices}\n\n請選擇操作：",
+        "data": {
+          "action": "操作"
+        }
+      },
+      "add": {
         "title": "新增裝置",
         "description": "輸入要新增至 Broadlink 支援清單的裝置資訊。",
         "data": {
@@ -26,10 +33,20 @@
           "model": "易讀的型號名稱（例如 RM mini 3）。",
           "manufacturer": "製造商名稱（預設為 Broadlink）。"
         }
+      },
+      "remove": {
+        "title": "移除裝置",
+        "description": "勾選要從清單中移除的裝置。",
+        "data": {
+          "remove_ids": "要移除的裝置"
+        }
       }
     },
     "error": {
       "invalid_device_id": "無效的裝置 ID — 請使用十六進位字串，例如 0x27C8。"
+    },
+    "abort": {
+      "no_devices": "目前沒有任何已註冊的裝置。"
     }
   }
 }

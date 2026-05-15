@@ -12,6 +12,11 @@ import logging
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from . import (
     CONF_DEVICE_ID,
@@ -26,6 +31,10 @@ from . import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# 操作選項常數 / Action option constants
+_ACTION_ADD = "add"
+_ACTION_REMOVE = "remove"
 
 
 class BroadlinkPatchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -78,19 +87,54 @@ class BroadlinkPatchConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class BroadlinkPatchOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
-    """處理「設定」按鈕的 Options Flow，讓使用者新增自訂裝置。
-    Handles the 'Configure' button Options Flow for adding custom devices.
+    """處理「設定」按鈕的 Options Flow，讓使用者管理自訂裝置清單。
+    Handles the 'Configure' button Options Flow for managing the custom device list.
 
     使用 OptionsFlowWithConfigEntry，self.config_entry 由父類別自動提供。
     Uses OptionsFlowWithConfigEntry; self.config_entry is provided by the parent class.
-
-    目前提供單一裝置的新增表單；重複送出可累積多筆裝置。
-    Currently provides a single-device add form; submit multiple times to add more.
     """
 
     async def async_step_init(self, user_input=None):
-        """Options Flow 的進入點，顯示新增裝置的表單。
-        Entry point of the Options Flow — shows the add-device form.
+        """步驟一：顯示目前裝置清單，讓使用者選擇新增或移除。
+        Step 1: Show current device list and let the user choose to add or remove.
+        """
+        existing = self.config_entry.options.get(CONF_DEVICES, DEFAULT_DEVICES)
+
+        if user_input is not None:
+            action = user_input.get("action")
+            if action == _ACTION_ADD:
+                return await self.async_step_add()
+            if action == _ACTION_REMOVE:
+                return await self.async_step_remove()
+
+        # 將目前裝置清單格式化為說明文字中的佔位符
+        # Format the current device list for the description placeholder
+        lines = [
+            f"• {d.get(CONF_MODEL, DEFAULT_MODEL)} ({d[CONF_DEVICE_ID]})"
+            for d in existing
+        ]
+        devices_str = "\n".join(lines) if lines else "(無 / none)"
+
+        schema = vol.Schema(
+            {
+                vol.Required("action", default=_ACTION_ADD): vol.In(
+                    {
+                        _ACTION_ADD: "新增裝置 / Add device",
+                        _ACTION_REMOVE: "移除裝置 / Remove device",
+                    }
+                )
+            }
+        )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=schema,
+            description_placeholders={"devices": devices_str},
+        )
+
+    async def async_step_add(self, user_input=None):
+        """步驟二（新增）：輸入新裝置的詳細資訊。
+        Step 2 (add): Enter details for a new device.
         """
         errors = {}
 
@@ -122,31 +166,64 @@ class BroadlinkPatchOptionsFlow(config_entries.OptionsFlowWithConfigEntry):
                     len(existing),
                 )
 
-                # 儲存更新後的 options，HA 會在下次重啟時套用
-                # Save the updated options; HA will apply them on next restart
-                return self.async_create_entry(
-                    title="", data={CONF_DEVICES: existing}
-                )
+                return self.async_create_entry(title="", data={CONF_DEVICES: existing})
 
-        # 顯示新增裝置的輸入表單
-        # Show the add-device input form
         schema = vol.Schema(
             {
-                # 裝置 ID 為必填（例如 "0x27C8"）
-                # Device ID is required (e.g. "0x27C8")
                 vol.Required(CONF_DEVICE_ID): str,
-
-                # 型號與製造商為選填，有預設值
-                # Model and manufacturer are optional with defaults
                 vol.Optional(CONF_MODEL, default=DEFAULT_MODEL): str,
-                vol.Optional(
-                    CONF_MANUFACTURER, default=DEFAULT_MANUFACTURER
-                ): str,
+                vol.Optional(CONF_MANUFACTURER, default=DEFAULT_MANUFACTURER): str,
             }
         )
 
         return self.async_show_form(
-            step_id="init",
+            step_id="add",
             data_schema=schema,
             errors=errors,
         )
+
+    async def async_step_remove(self, user_input=None):
+        """步驟二（移除）：從清單中選取要刪除的裝置。
+        Step 2 (remove): Select devices to delete from the list.
+        """
+        existing = list(self.config_entry.options.get(CONF_DEVICES, DEFAULT_DEVICES))
+
+        if not existing:
+            # 清單是空的，沒有東西可以移除
+            # Nothing to remove — abort with a friendly message
+            return self.async_abort(reason="no_devices")
+
+        if user_input is not None:
+            remove_ids = set(user_input.get("remove_ids", []))
+            updated = [d for d in existing if d[CONF_DEVICE_ID] not in remove_ids]
+
+            _LOGGER.debug(
+                "Options updated: removed %d device(s). Remaining: %d.",
+                len(remove_ids),
+                len(updated),
+            )
+
+            return self.async_create_entry(title="", data={CONF_DEVICES: updated})
+
+        # 用多選清單讓使用者選取要刪除的裝置
+        # Use a multi-select list so users can pick devices to delete
+        schema = vol.Schema(
+            {
+                vol.Required("remove_ids"): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            {
+                                "value": d[CONF_DEVICE_ID],
+                                "label": f"{d.get(CONF_MODEL, DEFAULT_MODEL)} ({d[CONF_DEVICE_ID]})",
+                            }
+                            for d in existing
+                        ],
+                        multiple=True,
+                        mode=SelectSelectorMode.LIST,
+                    )
+                )
+            }
+        )
+
+        return self.async_show_form(step_id="remove", data_schema=schema)
+

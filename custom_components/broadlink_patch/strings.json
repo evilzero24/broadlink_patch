@@ -14,8 +14,15 @@
   "options": {
     "step": {
       "init": {
+        "title": "Manage Devices",
+        "description": "Currently registered devices:\n{devices}\n\nChoose an action:",
+        "data": {
+          "action": "Action"
+        }
+      },
+      "add": {
         "title": "Add a Device",
-        "description": "Enter the details of the device you want to add to the Broadlink supported types list.",
+        "description": "Enter the details of the device you want to add.",
         "data": {
           "device_id": "Device ID (hex, e.g. 0x27C8)",
           "model": "Model Name",
@@ -26,10 +33,20 @@
           "model": "A human-readable model name (e.g. RM mini 3).",
           "manufacturer": "The manufacturer name (defaults to Broadlink)."
         }
+      },
+      "remove": {
+        "title": "Remove Devices",
+        "description": "Select the devices you want to remove.",
+        "data": {
+          "remove_ids": "Devices to remove"
+        }
       }
     },
     "error": {
       "invalid_device_id": "Invalid device ID — please use a hex string such as 0x27C8."
+    },
+    "abort": {
+      "no_devices": "No devices are currently registered."
     }
   }
 }
