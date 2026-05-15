@@ -251,7 +251,22 @@ async def async_setup_entry(hass, entry):
     # Read device list from Config Entry options (fall back to defaults if empty)
     devices = entry.options.get(CONF_DEVICES, DEFAULT_DEVICES)
 
-    return await _do_patch(devices)
+    success = await _do_patch(devices)
+    if not success:
+        return False
+
+    # 將已註冊的裝置型號顯示在整合卡片標題上，讓使用者一眼看出目前的清單
+    # Update the config entry title to show registered device models so users
+    # can see at a glance which devices are patched in
+    labels = [
+        f"{d.get(CONF_MODEL, DEFAULT_MODEL)} ({d[CONF_DEVICE_ID]})"
+        for d in devices
+    ]
+    new_title = ", ".join(labels)
+    if entry.title != new_title:
+        hass.config_entries.async_update_entry(entry, title=new_title)
+
+    return True
 
 
 async def async_unload_entry(hass, entry):
