@@ -45,9 +45,14 @@ config/
 
 ---
 
-## 新增更多裝置
+## 管理裝置
 
-安裝完成後，點整合卡片上的**設定**按鈕，填入裝置 ID 即可新增。每次送出可新增一台。
+安裝完成後，點整合卡片上的**設定**按鈕，就能看到目前已有的裝置清單，並選擇：
+
+- **新增裝置**：填入裝置 ID、型號、製造商，送出後儲存
+- **移除裝置**：勾選想刪除的裝置，送出後移除（不會影響整合本身）
+
+整合卡片的標題也會同步顯示目前有哪些裝置，一眼就看清楚。
 
 如果偏好 YAML，也可以在 `configuration.yaml` 裡設定，重啟後會一併套用：
 
@@ -152,9 +157,14 @@ Then add the integration the same way via **Settings → Devices & Services → 
 
 ---
 
-## Adding more devices
+## Managing devices
 
-After setup, click the **Configure** button on the integration card and enter a device ID. Submit once per device.
+After setup, click the **Configure** button on the integration card. You'll see a list of currently registered devices and can choose:
+
+- **Add device**: Enter the device ID, model, and manufacturer, then submit
+- **Remove device**: Check the devices you want to delete and submit — the integration itself stays intact
+
+The integration card title will also update to show which devices are currently registered.
 
 If you prefer YAML, you can also add devices in `configuration.yaml` — they'll be patched in on the next restart:
 
