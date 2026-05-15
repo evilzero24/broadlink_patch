@@ -83,6 +83,21 @@ Unsupported Broadlink device: type 0x27C8
 
 ---
 
+## 常見問題
+
+**整合頁面搜尋不到 Broadlink Patch？**
+
+1. HACS 安裝完成後，必須先**重啟 HA** 才能讓 HA 認識新的 custom component
+2. 重啟後再到 Settings → Devices & Services → Add Integration 搜尋
+3. 如果還是找不到，到 HA 的 **Settings → System → Logs** 搜尋 `broadlink_patch`，看有沒有載入錯誤
+
+**裝置注入了但 HA 還是認不出裝置？**
+
+- 確認裝置 ID 是對的（從日誌裡的 `Unsupported Broadlink device: type 0x????` 取得）
+- 確認整合已啟用，且重啟過 HA
+
+---
+
 ## 支援語言
 
 | 語言 | 檔案 |
@@ -178,6 +193,21 @@ That hex number is your `device_id`.
 ## How it works (roughly)
 
 When HA starts up, this integration grabs the `broadlink.SUPPORTED_TYPES` dictionary and adds your devices to it. Nothing on disk is touched — it's all in memory, so it just runs again on the next restart.
+
+---
+
+## Troubleshooting
+
+**Can't find Broadlink Patch in the integrations search?**
+
+1. After HACS installs the component, you **must restart HA** before it's recognised
+2. Then go to Settings → Devices & Services → Add Integration and search for it
+3. If it still doesn't appear, check **Settings → System → Logs** and search for `broadlink_patch` to see if there's a loading error
+
+**Device was injected but HA still can't find the device?**
+
+- Double-check the device ID (grab it from the log line `Unsupported Broadlink device: type 0x????`)
+- Make sure the integration is enabled and HA has been restarted
 
 ---
 
